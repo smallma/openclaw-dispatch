@@ -108,8 +108,9 @@ async function executeJob(job) {
     const systemPrompt = `
     \n\n[System Policy: 
     1. 為了確保資訊準確，當涉及天氣、新聞、股價或任何時效性資訊時，必須先執行 'google-search' 或 'weather' 工具，嚴禁根據內部知識記憶回答。
-    2. 即使你覺得自己知道答案，也必須上網核對 2026 年的最新消息。
-    3. 任務完成後，請發送 Telegram 訊息至目標 ID 1873208709]`;
+    2. 如果查詢地點有模糊空間（例如五股），請明確指定為「台灣新北市五股區」來查詢天氣以免抓到錯誤資訊。
+    3. 即使你覺得自己知道答案，也必須上網核對最新的即時消息。
+    4. 任務完成後，請發送 Telegram 訊息至目標 ID 1873208709]`;
 
     const finalInstruction = job.instruction + systemPrompt;
 
