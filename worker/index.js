@@ -36,7 +36,8 @@ async function checkCronJobs() {
       if (!t.cronExpression) continue;
       
       try {
-        const interval = parser.parseExpression(t.cronExpression);
+        // 設定時區為 Asia/Taipei，避免主機系統預設使用 UTC 造成差 8 小時或其他時差
+        const interval = parser.parseExpression(t.cronExpression, { tz: 'Asia/Taipei' });
         // prev() is the last cron trigger time
         const prev = interval.prev().toDate();
         
