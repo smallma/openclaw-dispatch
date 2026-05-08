@@ -5,6 +5,7 @@ import useSWR from 'swr';
 import { Plus } from 'lucide-react';
 import CreateJobForm from './components/CreateJobForm';
 import KanbanBoard, { Job } from './components/KanbanBoard';
+import JobDetailDrawer from './components/JobDetailDrawer';
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
 
@@ -15,9 +16,12 @@ export default function Dashboard() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<Job | null>(null);
+  const [inspectingJobId, setInspectingJobId] = useState<string | null>(null);
 
   const loading = !jobs && !error;
   const currentJobs = jobs || [];
+
+  const inspectingJob = currentJobs.find((j) => j.id === inspectingJobId) || null;
 
   const handleUpdateJob = async (id: string, data: any) => {
     // Optimistic fallback or just simple fetch
@@ -99,7 +103,13 @@ export default function Dashboard() {
             ))}
           </div>
         ) : (
-          <KanbanBoard jobs={currentJobs} onUpdateJob={handleUpdateJob} onEditJob={handleEditJob} onDeleteJob={handleDeleteJob} />
+          <KanbanBoard 
+            jobs={currentJobs} 
+            onUpdateJob={handleUpdateJob} 
+            onEditJob={handleEditJob} 
+            onDeleteJob={handleDeleteJob} 
+            onViewDetails={(job) => setInspectingJobId(job.id)}
+          />
         )}
       </div>
 
@@ -108,6 +118,11 @@ export default function Dashboard() {
         onClose={handleCloseModal} 
         onJobCreated={() => mutate()} 
         editingJob={editingJob}
+      />
+
+      <JobDetailDrawer 
+        job={inspectingJob} 
+        onClose={() => setInspectingJobId(null)} 
       />
       
       {/* Mobile Floating Action Button (Alternative) */}

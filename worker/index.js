@@ -102,13 +102,19 @@ async function executeJob(job) {
 
 
     const cmd = process.env.OPENCLAW_PATH || 'openclaw';
-    // 👇 在背後偷偷加上這段系統提示，AI 看到就會自動記住你的聯絡方式
-    const systemPrompt = `\n\n[System Note: 當指令要求「通知我」或發送 Telegram 訊息時，請一律發送至目標 ID 1873208709]`;
+    
+    // 👇 這裡我們強化系統小抄，強制要求它使用搜尋工具
+    const systemPrompt = `
+    \n\n[System Policy: 
+    1. 為了確保資訊準確，當涉及天氣、新聞、股價或任何時效性資訊時，必須先執行 'google-search' 或 'weather' 工具，嚴禁根據內部知識記憶回答。
+    2. 即使你覺得自己知道答案，也必須上網核對 2026 年的最新消息。
+    3. 任務完成後，請發送 Telegram 訊息至目標 ID 1873208709]`;
+
     const finalInstruction = job.instruction + systemPrompt;
 
     currentOpenclawProcess = spawn(cmd, [
-      'agent',
-      '--session-id', job.id,
+      'agent', 
+      '--session-id', job.id, 
       '--message', finalInstruction
     ]);
     let accumulatedLogs = '';

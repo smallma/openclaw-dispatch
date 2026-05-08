@@ -39,6 +39,7 @@ type KanbanBoardProps = {
   onUpdateJob: (id: string, data: any) => Promise<void>;
   onEditJob: (job: Job) => void;
   onDeleteJob: (id: string) => Promise<void>;
+  onViewDetails?: (job: Job) => void;
 };
 
 const COLUMNS = [
@@ -54,7 +55,8 @@ export default function KanbanBoard({
   jobs, 
   onUpdateJob,
   onEditJob,
-  onDeleteJob
+  onDeleteJob,
+  onViewDetails
 }: KanbanBoardProps) {
   const [activeJob, setActiveJob] = useState<Job | null>(null);
 
@@ -125,6 +127,7 @@ export default function KanbanBoard({
               onMoveTo={(id, status) => onUpdateJob(id, { status })}
               onEditJob={onEditJob}
               onDeleteJob={onDeleteJob}
+              onViewDetails={onViewDetails}
             />
           );
         })}

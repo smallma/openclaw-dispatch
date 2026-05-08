@@ -7,7 +7,7 @@ import TaskCard from './TaskCard';
 import { Job } from './KanbanBoard';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
-export default function KanbanColumn({ column, jobs, onMoveTo, onEditJob, onDeleteJob }: { column: any, jobs: Job[], onMoveTo: (id: string, status: string) => void, onEditJob?: (job: Job) => void, onDeleteJob: (id: string) => void }) {
+export default function KanbanColumn({ column, jobs, onMoveTo, onEditJob, onDeleteJob, onViewDetails }: { column: any, jobs: Job[], onMoveTo: (id: string, status: string) => void, onEditJob?: (job: Job) => void, onDeleteJob: (id: string) => void, onViewDetails?: (job: Job) => void }) {
   const { setNodeRef } = useDroppable({
     id: column.id,
   });
@@ -45,7 +45,7 @@ export default function KanbanColumn({ column, jobs, onMoveTo, onEditJob, onDele
         >
           <SortableContext items={jobs.map(j => j.id)} strategy={verticalListSortingStrategy}>
             {jobs.map(job => (
-              <TaskCard key={job.id} job={job} onMoveTo={onMoveTo} onEdit={() => onEditJob && onEditJob(job)} onDelete={() => onDeleteJob(job.id)} />
+              <TaskCard key={job.id} job={job} onMoveTo={onMoveTo} onEdit={() => onEditJob && onEditJob(job)} onDelete={() => onDeleteJob(job.id)} onViewDetails={() => onViewDetails && onViewDetails(job)} />
             ))}
           </SortableContext>
           {jobs.length === 0 && (

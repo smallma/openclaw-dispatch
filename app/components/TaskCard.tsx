@@ -4,10 +4,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { format } from 'date-fns';
-import { MoreVertical, Calendar, Clock, TerminalSquare, Settings2, Trash2, Edit2 } from 'lucide-react';
+import { MoreVertical, Calendar, Clock, TerminalSquare, Settings2, Trash2, Edit2, Info } from 'lucide-react';
 import { Job } from './KanbanBoard';
 
-export default function TaskCard({ job, onMoveTo, onEdit, onDelete, isOverlay = false }: { job: Job, onMoveTo: (id: string, s: string) => void, onEdit?: () => void, onDelete?: () => void, isOverlay?: boolean }) {
+export default function TaskCard({ job, onMoveTo, onEdit, onDelete, onViewDetails, isOverlay = false }: { job: Job, onMoveTo: (id: string, s: string) => void, onEdit?: () => void, onDelete?: () => void, onViewDetails?: () => void, isOverlay?: boolean }) {
   const {
     attributes,
     listeners,
@@ -165,6 +165,17 @@ export default function TaskCard({ job, onMoveTo, onEdit, onDelete, isOverlay = 
         <span className="text-[10px] text-slate-500 uppercase font-semibold">
           Updated: {format(new Date(job.updatedAt), 'MM/dd HH:mm')}
         </span>
+        {onViewDetails && (
+          <button 
+            className="p-1.5 text-indigo-400 hover:text-indigo-300 hover:bg-slate-800 rounded-md transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              onViewDetails();
+            }}
+          >
+            <Info className="w-4 h-4" />
+          </button>
+        )}
       </div>
     </div>
   );
