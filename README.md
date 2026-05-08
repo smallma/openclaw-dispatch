@@ -20,6 +20,11 @@
 
 ## 💻 啟動教學 (Getting Started)
 
+### 📌 系統需求 (Prerequisites)
+- **Node.js**: v18.17.0 以上版本 (建議使用 v20.x LTS)
+- **npm**: v9.x 以上版本
+- **Openclaw CLI**: 必須在系統中全域安裝 `openclaw`，或者在 `.env` 中設定 `OPENCLAW_PATH` 指定執行檔路徑。
+
 ### 1. 環境設定
 複製 `.env.example` 並建立 `.env` 檔案，確保內容設定正確：
 
