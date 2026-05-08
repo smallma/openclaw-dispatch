@@ -1,5 +1,9 @@
 require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
 const { spawn } = require('child_process');
+const parser = require('cron-parser');
+// using Prisma directly to scan jobs
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 
 const API_BASE = 'http://localhost:3000/api';
 const POLL_INTERVAL = 60000; // 60 seconds
@@ -17,8 +21,52 @@ const getHeaders = () => ({
   'Authorization': `Bearer ${WORKER_SECRET}`
 });
 
+async function checkCronJobs() {
+  try {
+    const templates = await prisma.job.findMany({
+      where: { 
+        isTemplate: true,
+        cronExpression: { not: null }
+      }
+    });
+
+    const now = new Date();
+    
+    for (const t of templates) {
+      if (!t.cronExpression) continue;
+      
+      try {
+        const interval = parser.parseExpression(t.cronExpression);
+        // prev() is the last cron trigger time
+        const prev = interval.prev().toDate();
+        
+        // See if prev() triggered within the last POLL_INTERVAL (e.g. 1 minute)
+        if (now.getTime() - prev.getTime() <= POLL_INTERVAL) {
+          console.log(`[Worker - Cron] Routine "${t.title}" triggered at ${now.toISOString()}. Spawning new job.`);
+          
+          await prisma.job.create({
+            data: {
+              title: `[Routine] ${t.title}`,
+              instruction: t.instruction,
+              status: 'PENDING',
+              order: 0,
+              isTemplate: false,
+            }
+          });
+        }
+      } catch (err) {
+        console.error(`[Worker - Cron] Error parsing expression "${t.cronExpression}" for job ${t.id}`, err.message);
+      }
+    }
+  } catch (err) {
+    console.error('[Worker - Cron] DB check failed:', err.message);
+  }
+}
+
 async function pollJobs() {
   try {
+    await checkCronJobs(); // evaluate crons first
+    
     const res = await fetch(`${API_BASE}/worker/next`, {
       method: 'GET',
       headers: getHeaders()
@@ -51,6 +99,7 @@ async function pollJobs() {
 async function executeJob(job) {
   return new Promise((resolve) => {
     console.log(`[Worker] Starting openclaw for job ${job.id}`);
+
 
     const cmd = process.env.OPENCLAW_PATH || 'openclaw';
     // 👇 在背後偷偷加上這段系統提示，AI 看到就會自動記住你的聯絡方式
@@ -96,7 +145,7 @@ async function executeJob(job) {
       clearInterval(intervalId);
       currentOpenclawProcess = null;
 
-      const status = code === 0 ? 'Completed' : 'Failed';
+      const status = code === 0 ? 'DONE' : 'FAILED';
       const result = code === 0 ? 'Openclaw finished successfully.' : `Openclaw exited with code ${code}`;
 
       try {

@@ -3,18 +3,25 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET() {
   try {
-    // using interactive transaction to find the oldest pending job and update it to running
     const nextJob = await prisma.$transaction(async (tx) => {
+      // 尋找最早建立，且 (沒有排定時間 或 排定時間早於目前) 的 TODO 任務 (Wait to do)
       const job = await tx.job.findFirst({
-        where: { status: 'Pending' },
+        where: {
+          status: 'TODO',
+          OR: [
+            { scheduledAt: null },
+            { scheduledAt: { lte: new Date() } }
+          ]
+        },
         orderBy: { createdAt: 'asc' },
       });
 
       if (!job) return null;
 
+      // 抓到任務後立刻壓成 DOING
       return tx.job.update({
         where: { id: job.id },
-        data: { status: 'Running' },
+        data: { status: 'DOING' },
       });
     });
 

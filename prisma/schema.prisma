@@ -11,12 +11,21 @@ datasource db {
 }
 
 model Job {
-  id          String   @id @default(uuid())
-  title       String
-  instruction String
-  status      String   @default("Pending") // 'Pending', 'Running', 'Completed', 'Failed'
-  logs        String?
-  result      String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              String    @id @default(uuid())
+  title           String
+  instruction     String
+  status          String    @default("PENDING") // 狀態：PENDING, DOING, DONE, FAILED, ROUTINE
+  
+  // --- 新增：排程與週期功能 ---
+  scheduledAt     DateTime? // 定時觸發時間 (null 代表立即執行)
+  cronExpression  String?   // 週期規則 (例如："0 9 * * *" 每天早上九點)
+  isTemplate      Boolean   @default(false) // 標記是否為「常駐任務的母體」
+  
+  // --- 新增：看板 UI 排序 ---
+  order           Int       @default(0) // 紀錄在看板同一欄位中的上下順序
+
+  logs            String?
+  result          String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 }

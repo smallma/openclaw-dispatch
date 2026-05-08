@@ -4,7 +4,11 @@ import { prisma } from '@/lib/prisma';
 export async function GET() {
   try {
     const jobs = await prisma.job.findMany({
-      orderBy: { createdAt: 'desc' },
+      orderBy: [
+        { status: 'asc' },
+        { order: 'asc' },
+        { createdAt: 'desc' }
+      ]
     });
     return NextResponse.json(jobs);
   } catch (error) {
@@ -14,7 +18,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const { title, instruction } = await request.json();
+    const { title, instruction, scheduledAt, cronExpression, isTemplate, status } = await request.json();
     
     if (!title || !instruction) {
       return NextResponse.json({ error: 'Title and instruction are required' }, { status: 400 });
@@ -24,6 +28,10 @@ export async function POST(request: Request) {
       data: {
         title,
         instruction,
+        scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
+        cronExpression: cronExpression || null,
+        isTemplate: !!isTemplate,
+        status: status || (cronExpression ? 'ROUTINE' : 'PENDING'), // Routine if cron, otherwise Pending
       },
     });
 
